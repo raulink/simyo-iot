@@ -6,12 +6,16 @@
 #include <ESPAsyncWebServer.h>
 #include "LittleFS.h"
 #include <Arduino_JSON.h>
-#include <ArduinoJson.h>
 #include <AsyncElegantOTA.h>
 
 // Replace with your network credentials
- const char* ssid = "Raulink";
- const char* password = "c0nd0m1n10.";
+ String ssid;//="Raulink"; 
+ String password;//="c0nd0m1n10.";
+ IPAddress ip;
+ IPAddress gateway;//(192, 168, 0, 1);
+ IPAddress subnet;//(255, 255, 255, 0);
+ int port;
+ 
 
 // const size_t capacity = JSON_OBJECT_SIZE(4) + 70;
 //DynamicJsonBuffer jsonBuffer(capacity);
@@ -37,36 +41,76 @@ AsyncWebSocket ws("/ws");
 // Assign each GPIO to an output
 int outputGPIOs[NUM_OUTPUTS] = {2, 4, 12, 14};
 
-// Initialize LittleFS
-void initLittleFS() {
-  if (!LittleFS.begin()) {    
-    Serial.println("An error has occurred while mounting LittleFS");
-  }
-  File file = LittleFS.open("/config.json","r");
+/**
+ * @brief Funcion lectura archivo JSON
+ * 
+ */
+void readJSON(File file){    
+  String json;
   if(!file){
     Serial.println("Failed to open file for reading");
     return;
   }
   Serial.println("File Content:");
-  while(file.available()){
-    Serial.write(file.read());
+  while(file.available()){    
+     json = file.readString();     
   }
-  file.close();
+  String s;
+  JSONVar objeto = JSON.parse(json);
+
+  // Obtener ssid
+  s = JSON.stringify( objeto["ssid"]);  
+  s.replace("\"","");
+  ssid = s;
+
+  //  Obtener Pass
+  s = JSON.stringify( objeto["pass"]);
+  s.replace("\"","");
+  password = s;
   
+  //Obtener IP
+  s = JSON.stringify( objeto["ip"]);
+  s.replace("\"","");
+  ip.fromString(s);
+   
+  // Obtener y transformar IP
+  s = JSON.stringify( objeto["ip"]);
+  s.replace("\"","");
+  ip.fromString(s);
+  
+  // Obtener y transformar IP
+  s = JSON.stringify( objeto["gateway"]);
+  s.replace("\"","");
+  gateway.fromString(s);
+
+  // Obtener y transformar IP
+  s = JSON.stringify( objeto["subnet"]);
+  s.replace("\"","");
+  subnet.fromString(s);
+
+  file.close();
+}
+
+// Initialize LittleFS
+void initLittleFS() {
+  if (!LittleFS.begin()) {    
+    Serial.println("An error has occurred while mounting LittleFS");
+  }
+  
+  readJSON(LittleFS.open("/config.json","r"));
   
   //JsonObject& root = jsonBuffer.parseObject(json);
   //Serial.println("LittleFS mounted successfully");
 }
-
-void readJSON(){
-
-}
-
 // Initialize WiFi
 void initWiFi() {
   WiFi.mode(WIFI_STA);
-  WiFi.begin(ssid, password);
+  WiFi.config(ip,gateway,subnet);  
+  
   Serial.print("Connecting to WiFi ..");  
+  Serial.print(ssid);
+  Serial.print(password);
+  WiFi.begin(ssid, password);
   
   while (WiFi.status() != WL_CONNECTED) {
     Serial.print('.');
