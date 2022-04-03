@@ -11,24 +11,12 @@
 // Replace with your network credentials
  String ssid;//="Raulink"; 
  String password;//="c0nd0m1n10.";
+ String hostname="nodo1";
  IPAddress ip;
  IPAddress gateway;//(192, 168, 0, 1);
  IPAddress subnet;//(255, 255, 255, 0);
  int port;
  
-
-// const size_t capacity = JSON_OBJECT_SIZE(4) + 70;
-//DynamicJsonBuffer jsonBuffer(capacity);
-
-//const char* json = "{\"ssid\":\"Raulink\",\"pass\":\"c0nd0m1n10.\",\"ip\":\"192.168.0.50\",\"port\":\"8080\"}";
-
-//JsonObject& root = jsonBuffer.parseObject(json);
-
-/* const char* ssid = root["ssid"]; // "Raulink"
-const char* password = root["password"]; // "c0nd0m1n10."
-const char* ip = root["ip"]; // "192.168.0.50"
-const char* port = root["port"]; // "8080" */
-
 // Create AsyncWebServer object on port 80
 AsyncWebServer server(80);
 
@@ -106,10 +94,13 @@ void initLittleFS() {
 void initWiFi() {
   WiFi.mode(WIFI_STA);
   WiFi.config(ip,gateway,subnet);  
+  WiFi.hostname(hostname.c_str());
   
   Serial.print("Connecting to WiFi ..");  
   Serial.print(ssid);
   Serial.print(password);
+  Serial.printf("Hostname: %s\n", WiFi.hostname().c_str());   //Muestra nombre de host, verificar si ingresa por nombre
+
   WiFi.begin(ssid, password);
   
   while (WiFi.status() != WL_CONNECTED) {
