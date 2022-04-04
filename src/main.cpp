@@ -54,9 +54,9 @@ byte mac[] = {0xDE, 0xED, 0xBA, 0xFE, 0xFE, 0xAE};
 
 /// Sector MQTT
 #define MQTT_ID "demo"
-//TODO: Capturar desde json
-IPAddress broker; // Direccion IP del broker
-int brokerport =1883;   // Puerto del broker
+// TODO: Capturar desde json
+IPAddress broker;      // Direccion IP del broker
+int brokerport = 1883; // Puerto del broker
 
 // Create AsyncWebServer object on port 80
 AsyncWebServer server(80);
@@ -74,7 +74,8 @@ int outputGPIOs[NUM_OUTPUTS] = {2, 4, 12, 14};
  * @brief Funcion lectura archivo JSON
  *
  */
-void readJSON(File file){
+void readJSON(File file)
+{
   String json;
   if (!file)
   {
@@ -119,19 +120,17 @@ void readJSON(File file){
   s.replace("\"", "");
   subnet.fromString(s);
 
-// Obtener y transformar IP de broker
+  // Obtener y transformar IP de broker
   s = JSON.stringify(objeto["subnet"]);
   s.replace("\"", "");
   broker.fromString(s);
-
-
-
 
   file.close();
 }
 
 // Initialize LittleFS
-void initLittleFS(){
+void initLittleFS()
+{
   if (!LittleFS.begin())
   {
     Serial.println("An error has occurred while mounting LittleFS");
@@ -226,18 +225,12 @@ void initWebSocket()
   server.addHandler(&ws);
 }
 
-/**
- * @brief funcion callback MQTT
- * 
- */
-void callback(String topic, byte* message, unsigned int length){
-
-  Serial.print("Mensaje recibido en topic:");
-  Serial.print(topic);
-  Serial.print(".Mensaje:");
+void callback(String topic, byte *message, unsigned int length)
+{
   String messageTemp;
 
-  for(int i=0;i<length,i++){
+  for (int i = 0; i < length; i++)
+  {
     Serial.print((char)message[i]);
     messageTemp += (char)message[i];
   }
@@ -246,23 +239,27 @@ void callback(String topic, byte* message, unsigned int length){
   // Mas funciones añadidas para el control de mas GPIOS con MQTT
 
   // Si el mensaje se recibe en el topico especifico, ver el mensaje
-  if(topic == "maq/mep1/z1"){
+  if (topic == "maq/mep1/z1")
+  {
     Serial.print("Cambiar estado z1");
-    if(messageTemp=="on") {
-      digitalWrite(4,HIGH);
+    if (messageTemp == "on")
+    {
+      digitalWrite(4, HIGH);
       Serial.print("On");
     }
-    else if(messageTemp=="off"){
-      digitalWrite(4,LOW);
+    else if (messageTemp == "off")
+    {
+      digitalWrite(4, LOW);
       Serial.print("Off");
     }
   }
   Serial.println();
 }
 
-
-void reconnect(){
-   while (!client.connected()) {
+void reconnect()
+{
+  while (!client.connected())
+  {
     Serial.print("Attempting MQTT connection...");
     // Attempt to connect
     /*
@@ -276,12 +273,15 @@ void reconnect(){
        if (client.connect("ESP2_Garage")) {
       That should solve your MQTT multiple connections problem
     */
-    if (client.connect(MQTT_ID)) {
-      Serial.println("connected");  
+    if (client.connect(MQTT_ID))
+    {
+      Serial.println("connected");
       // Subscribe or resubscribe to a topic
       // You can subscribe to more topics (to control more LEDs in this example)
       client.subscribe("room/lamp");
-    } else {
+    }
+    else
+    {
       Serial.print("failed, rc=");
       Serial.print(client.state());
       Serial.println(" try again in 5 seconds");
@@ -292,8 +292,41 @@ void reconnect(){
 }
 
 /**
+ * @brief
+ *
+ * @param topic
+ * @param root
+ */
+void publish(const char *topic, JSONVar &root)
+{
+  unsigned len = root.length();
+  if (len > 0)
+  {
+    char *payload = new char[len + 1];
+    if (payload)
+    {
+      root.printTo(payload, len + 1);
+      publish(topic, payload);
+    }
+  }
+}
+
+/**
+ * @brief
+ *
+ * @param topic
+ * @param payload
+ */
+void publish(const char *topic, const char *payload)
+{
+  if (client.connected())
+    client.publish(topic, payload);
+  // client.publish(topic,payload);
+}
+
+/**
  * @brief Funcion Setup
- * 
+ *
  */
 void setup()
 {
@@ -306,7 +339,7 @@ void setup()
     pinMode(outputGPIOs[i], OUTPUT);
   }
 
-  client.setServer(broker,brokerport);
+  client.setServer(broker, brokerport);
   client.setCallback(callback);
 
   initLittleFS();
@@ -328,18 +361,16 @@ void setup()
 
 void loop()
 {
-  const char* tempz1 ="22";
-  const char* humz1 ="32";
+  const char *tempz1 = "22";
+  const char *humz1 = "32";
   ws.cleanupClients();
 
-  if(!client.connected())
+  if (!client.connected())
     reconnect();
-  if(!client.loop())
+  if (!client.loop())
     client.connect(MQTT_ID);
 
   // Si existe alguna salida analogica o digital
   /* client.publish("temp/z1",tempz1);
   client.publish("hum/z1",humz1); */
-
-
 }
