@@ -28,33 +28,31 @@ PubSubClient client(espClient);
 #define NUM_DIGITAL_OUTPUT_PER_ZONE 5
 #define DIGITAL_OUTPUTS_OFFSET 0
 const int digitalOutputs[NUM_ZONES][NUM_DIGITAL_OUTPUT_PER_ZONE] = {
-    {},
+    {2, 3, 4}
 };
 
 #define NUM_ANALOG_OUTPUTS_PER_ZONE 1
 #define ANALOG_OUTPUTS_OFFSET 5
 const int analogOutputs[NUM_ZONES][NUM_ANALOG_OUTPUTS_PER_ZONE] = {
-    {},
+    {}
 };
 
 #define NUM_DIGITAL_INPUTS_PER_ZONE 7
 #define DIGITAL_INPUTS_OFFSET 0
 const int digitalInputs[NUM_ZONES][NUM_DIGITAL_INPUTS_PER_ZONE] = {
-    {},
-};
+    {1, 2, 3}};
 
 #define NUM_ANALOG_INPUTS_PER_ZONE 7
 #define ANALOG_INPUTS_OFFSET 0
 #define ANALOG_INPUTS_THRESHOLD 5
-const int digitalInputs[NUM_ZONES][NUM_ANALOG_INPUTS_PER_ZONE] = {
-    {},
+const int analogInputs[NUM_ZONES][NUM_ANALOG_INPUTS_PER_ZONE] = {
+    {2, 0, 1},
 };
 
-byte mac[] = {0xDE, 0xED, 0xBA, 0xFE, 0xFE, 0xAE};
+// byte mac[] = {0xDE, 0xED, 0xBA, 0xFE, 0xFE, 0xAE};
 
 /// Sector MQTT
 #define MQTT_ID "demo"
-// TODO: Capturar desde json
 IPAddress broker;      // Direccion IP del broker
 int brokerport = 1883; // Puerto del broker
 
@@ -225,13 +223,20 @@ void initWebSocket()
   server.addHandler(&ws);
 }
 
+/**
+ * @brief funcion callback MQTT
+ *
+ */
 void callback(String topic, byte *message, unsigned int length)
 {
   String messageTemp;
+  /* Serial.print("Mensaje recibido en topic:");
+  Serial.print(topic);
+  Serial.print(".Mensaje:"); */
 
   for (int i = 0; i < length; i++)
   {
-    Serial.print((char)message[i]);
+    // Serial.print((char) message[i]);
     messageTemp += (char)message[i];
   }
   Serial.println();
@@ -292,39 +297,6 @@ void reconnect()
 }
 
 /**
- * @brief
- *
- * @param topic
- * @param root
- */
-void publish(const char *topic, JSONVar &root)
-{
-  unsigned len = root.length();
-  if (len > 0)
-  {
-    char *payload = new char[len + 1];
-    if (payload)
-    {
-      root.printTo(payload, len + 1);
-      publish(topic, payload);
-    }
-  }
-}
-
-/**
- * @brief
- *
- * @param topic
- * @param payload
- */
-void publish(const char *topic, const char *payload)
-{
-  if (client.connected())
-    client.publish(topic, payload);
-  // client.publish(topic,payload);
-}
-
-/**
  * @brief Funcion Setup
  *
  */
@@ -361,8 +333,8 @@ void setup()
 
 void loop()
 {
-  const char *tempz1 = "22";
-  const char *humz1 = "32";
+  /* const char *tempz1 = "22";
+  const char *humz1 = "32"; */
   ws.cleanupClients();
 
   if (!client.connected())
