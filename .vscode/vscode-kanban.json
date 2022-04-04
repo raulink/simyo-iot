@@ -1,0 +1,20 @@
+{
+  "todo": [
+    {
+      "assignedTo": {
+        "name": "raulink"
+      },
+      "creation_time": "2022-04-04T02:30:49.906Z",
+      "description": {
+        "content": "mqtt añadido",
+        "mime": "text/markdown"
+      },
+      "id": "1",
+      "references": [],
+      "title": "Desde json broker y puerto"
+    }
+  ],
+  "in-progress": [],
+  "testing": [],
+  "done": []
+}
